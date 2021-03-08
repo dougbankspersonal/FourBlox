@@ -1,54 +1,57 @@
-local ButtonClass = {}
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BlockColors = require(ReplicatedStorage.BlockColors)
+local Roact = require(ReplicatedStorage.Roact)
+
 local incrementBlockColorRequest = ReplicatedStorage:WaitForChild("IncrementBlockColorRequest")
 local getBlockColorRequest = ReplicatedStorage:WaitForChild("GetBlockColorRequest")
 
-ButtonClass.__index = ButtonClass
+local RoactButtonClass = Roact.Component:extend("RoactButtonClass")
 
-ButtonClass.gButtons = {}
+RoactButtonClass.gButtons = {}
 
-function ButtonClass.new(index, screenGui)
-    local self = {}
-    setmetatable(self, ButtonClass)
+function RoactButtonClass:init()
+    local index = self.props.index
 
-    self.buttonIndex = index
+    -- keep a reference to the button.
+    RoactButtonClass.gButtons[index] = self
 
-    -- make text button.
-    self.textButton = Instance.new("TextButton")
-    self.textButton.Parent = screenGui
+    -- get the current color of the corresponding block.
+    local colorIndex = getBlockColorRequest:InvokeServer(index)
 
-    ButtonClass.gButtons[index] = self
-
-    local colorIndex = getBlockColorRequest:InvokeServer(self.buttonIndex)
-
-    self:_setColor(colorIndex)
-    self.textButton.Position = UDim2.new(0.5, -50, 0, 10 + 40 * (self.buttonIndex-1))
-    self.textButton.Size = UDim2.new(0, 100, 0, 30)
-    self.textButton.Text = "Click " .. tostring(self.buttonIndex)
-    self.textButton.Activated:Connect(function() 
-        self:_onClick()
-    end)
-
+    -- Listen for remote event indicating block changed color.
     local remoteEvent = ReplicatedStorage:WaitForChild("BlockColorChangeBroadcast")
     remoteEvent.OnClientEvent:Connect(function(blockIndex, colorIndex) 
-        if (self.buttonIndex == blockIndex) then 
-            self:_setColor(colorIndex)
+        if (index == blockIndex) then 
+            self:setState({
+                colorIndex = colorIndex
+            })
         end
     end)
 
-    return self
+    self:setState({
+        colorIndex = index
+    })
 end
 
-function ButtonClass:_setColor(colorIndex)
-    self.textButton.BackgroundColor3 = BlockColors.gBlockColors[colorIndex].Color
+function RoactButtonClass:render()
+    local colorIndex = self.state.colorIndex
+    local buttonIndex = self.props.index
+
+    return Roact.createElement("TextButton", {
+        Size = UDim2.new(0, 100, 0, 30),
+        Position = UDim2.new(0.5, -50, 0, 10 + 40 * (buttonIndex-1)),
+        Text = "Click " .. tostring(buttonIndex), 
+        BackgroundColor3 = BlockColors.gBlockColors[colorIndex].Color,
+        [Roact.Event.Activated] = function(rbx) 
+            self:_onClick()
+        end
+    })
 end
 
-function ButtonClass:_onClick()
-    print("Clicked me " .. tostring(self.buttonIndex))
-    incrementBlockColorRequest:InvokeServer(self.buttonIndex)
+function RoactButtonClass:_onClick()
+    print("Clicked me " .. tostring(self.props.index))
+    incrementBlockColorRequest:InvokeServer(self.props.index)
 end
 
-return ButtonClass
+return RoactButtonClass
