@@ -4,39 +4,30 @@ local BlockColors = require(ReplicatedStorage.BlockColors)
 local Roact = require(ReplicatedStorage.Roact)
 
 local incrementBlockColorRequest = ReplicatedStorage:WaitForChild("IncrementBlockColorRequest")
-local getBlockColorRequest = ReplicatedStorage:WaitForChild("GetBlockColorRequest")
 
 local RoactButtonClass = Roact.Component:extend("RoactButtonClass")
 
 RoactButtonClass.gButtons = {}
 
+
 function RoactButtonClass:init()
     local index = self.props.index
-
     -- keep a reference to the button.
     RoactButtonClass.gButtons[index] = self
+end
 
-    -- get the current color of the corresponding block.
-    local colorIndex = getBlockColorRequest:InvokeServer(index)
-
-    -- Listen for remote event indicating block changed color.
-    local remoteEvent = ReplicatedStorage:WaitForChild("BlockColorChangeBroadcast")
-    remoteEvent.OnClientEvent:Connect(function(blockIndex, colorIndex) 
-        if (index == blockIndex) then 
-            self:setState({
-                colorIndex = colorIndex
-            })
-        end
-    end)
-
-    self:setState({
-        colorIndex = index
-    })
+function dumpTable(t)
+    for i, v in ipairs(t) do 
+        print(i .. ": " .. v)
+    end
 end
 
 function RoactButtonClass:render()
-    local colorIndex = self.state.colorIndex
     local buttonIndex = self.props.index
+    local colorIndex = self.props.buttonColorByIndex[buttonIndex]
+    if not colorIndex then 
+        colorIndex = buttonIndex
+    end
 
     return Roact.createElement("TextButton", {
         Size = UDim2.new(0, 100, 0, 30),
