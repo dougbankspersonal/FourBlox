@@ -65,15 +65,6 @@ for i = 1, 4 do
     setButtonColorInRoduxStore(i, currentColorIndex)
 end
 
--- wrap the RoactButtonClass in Roact/Rodux fu.
-RoactButtonClass = RoactRodux.connect(
-    function(state, props) 
-        return {
-            buttonColorByIndex = state.buttonColorByIndex
-        }
-    end
-)(RoactButtonClass)
-
 -- make table of roact buttons.
 local roactButtonElements = {}
 for i = 1, 4 do 
@@ -89,8 +80,7 @@ end
 local app = Roact.createElement(RoactRodux.StoreProvider, {
     store = store, 
 }, {
-    Main = Roact.createElement("ScreenGui", {
-        Name = "FourBloxScreenGui"
+    FourBloxScreenGui = Roact.createElement("ScreenGui", {
     }, roactButtonElements)   
 })
 

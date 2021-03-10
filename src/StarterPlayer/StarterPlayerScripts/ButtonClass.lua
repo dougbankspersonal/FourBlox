@@ -2,18 +2,13 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BlockColors = require(ReplicatedStorage.BlockColors)
 local Roact = require(ReplicatedStorage.Roact)
+local RoactRodux = require(ReplicatedStorage.RoactRodux)
 
 local incrementBlockColorRequest = ReplicatedStorage:WaitForChild("IncrementBlockColorRequest")
 
 local RoactButtonClass = Roact.Component:extend("RoactButtonClass")
 
-RoactButtonClass.gButtons = {}
-
-
 function RoactButtonClass:init()
-    local index = self.props.index
-    -- keep a reference to the button.
-    RoactButtonClass.gButtons[index] = self
 end
 
 function dumpTable(t)
@@ -44,5 +39,14 @@ function RoactButtonClass:_onClick()
     print("Clicked me " .. tostring(self.props.index))
     incrementBlockColorRequest:InvokeServer(self.props.index)
 end
+
+-- wrap the RoactButtonClass in Roact/Rodux fu.
+RoactButtonClass = RoactRodux.connect(
+    function(state, props) 
+        return {
+            buttonColorByIndex = state.buttonColorByIndex
+        }
+    end
+)(RoactButtonClass)
 
 return RoactButtonClass
