@@ -2,6 +2,7 @@ print("Hello world")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
+local Cryo = require(ReplicatedStorage.Cryo)
 local Rodux = require(ReplicatedStorage.Rodux)
 local Roact = require(ReplicatedStorage.Roact)
 local RoactRodux = require(ReplicatedStorage.RoactRodux)
@@ -23,18 +24,7 @@ end
 -- Reducer for the BlockIndex-to-color map in state.
 local receivedBlockColorReducer = Rodux.createReducer({}, {
     ReceivedBlockColor = function(state, action)
-        local newState = {}
-
-        -- Since state is read-only, we copy it into newState
-        for blockIndex, colorIndex in pairs(state) do
-            newState[blockIndex] = colorIndex
-        end
-
-        for blockIndex, colorIndex in pairs(action.blockColors) do
-            newState[blockIndex] = colorIndex
-        end
-
-        return newState
+        return Cryo.Dictionary.join(state, action.blockColors)
     end,
 })
 

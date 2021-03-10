@@ -6,9 +6,13 @@ local RoactRodux = require(ReplicatedStorage.RoactRodux)
 
 local incrementBlockColorRequest = ReplicatedStorage:WaitForChild("IncrementBlockColorRequest")
 
-local RoactButtonClass = Roact.Component:extend("RoactButtonClass")
+local RoactButtonClass = Roact.PureComponent:extend("RoactButtonClass")
 
 function RoactButtonClass:init()
+    self._onClick = function(rbx)
+        print("Clicked me " .. tostring(self.props.index))
+        incrementBlockColorRequest:InvokeServer(self.props.index)
+    end    
 end
 
 function dumpTable(t)
@@ -29,15 +33,8 @@ function RoactButtonClass:render()
         Position = UDim2.new(0.5, -50, 0, 10 + 40 * (buttonIndex-1)),
         Text = "Click " .. tostring(buttonIndex), 
         BackgroundColor3 = BlockColors.gBlockColors[colorIndex].Color,
-        [Roact.Event.Activated] = function(rbx) 
-            self:_onClick()
-        end
+        [Roact.Event.Activated] = self._onClick
     })
-end
-
-function RoactButtonClass:_onClick()
-    print("Clicked me " .. tostring(self.props.index))
-    incrementBlockColorRequest:InvokeServer(self.props.index)
 end
 
 -- wrap the RoactButtonClass in Roact/Rodux fu.
