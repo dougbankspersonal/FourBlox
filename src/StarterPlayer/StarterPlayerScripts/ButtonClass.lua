@@ -11,6 +11,8 @@ local RoactButtonClass = Roact.PureComponent:extend("RoactButtonClass")
 function RoactButtonClass:init()
     self._onClick = function(rbx)
         print("Clicked me " .. tostring(self.props.index))
+        print("rbx is " .. tostring(rbx))
+        print("self is " .. tostring(self))
         incrementBlockColorRequest:InvokeServer(self.props.index)
     end    
 end
